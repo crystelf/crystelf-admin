@@ -1,0 +1,11 @@
+{
+  "debug": true,
+  "core": true,
+  "coreConfig": {
+    "coreUrl": "",
+    "wsClientId": "",
+    "wsSecret": "",
+    "wsReConnectInterval": "5000",
+    "token": ""
+  }
+}
