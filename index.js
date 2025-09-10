@@ -6,16 +6,17 @@ import { crystelfInit } from './lib/system/init.js';
 import updater from './lib/system/updater.js';
 
 logger.info(
-  chalk.rgb(134, 142, 204)(`crystelf-admin ${Version.ver} 初始化 ~ by ${Version.author}`)
+    chalk.rgb(134, 142, 204)(`crystelf-admin ${Version.ver} 初始化~ by ${Version.author}`)
 );
 
 updater.checkAndUpdate().catch((err) => {
   logger.err(err);
 });
-await crystelfInit.CSH();
+//不要加await！！！
+crystelfInit.CSH().then(logger.mark('[crystelf-admin] crystelf-admin 完成初始化'));
 
 const appPath = Path.apps;
-const jsFiles = fc.readDirRecursive(appPath, 'js');
+const jsFiles = await fc.readDirRecursive(appPath, 'js');
 
 let ret = jsFiles.map((file) => {
   return import(`./apps/${file}`);

@@ -25,7 +25,7 @@ export default class ReportBots extends plugin {
   }
 
   async autoReport() {
-    logger.mark(`正在自动同步bot数据到晶灵核心..`);
+    logger.mark(`[crystelf-admin] 正在自动同步bot数据到晶灵核心..`);
     if (configControl.get('core')) {
       await botControl.reportBots();
     }
@@ -33,13 +33,13 @@ export default class ReportBots extends plugin {
 
   async manualReport(e) {
     if (!configControl.get('core')) {
-      return e.reply(`晶灵核心未启用..`, true);
+      return e.reply(`[crystelf-admin] 晶灵核心未启用..`, true);
     }
     let success = await botControl.reportBots();
     if (success) {
-      await e.reply('crystelf Bot信息已同步到核心..', true);
+      await e.reply('Bot信息已同步到核心..', true);
     } else {
-      await e.reply('crystelf Bot同步失败：核心未连接..', true);
+      await e.reply('Bot同步失败：核心未连接..', true);
     }
   }
 
