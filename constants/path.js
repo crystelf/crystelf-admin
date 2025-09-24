@@ -13,16 +13,16 @@ const Path = {
   components: path.join(rootDir, 'components'),
   defaultConfig: path.join(rootDir, 'config/config.json'),
   defaultConfigPath: path.join(rootDir, 'config'),
-  config: path.resolve(rootDir, '../../data/crystelf'),
+  config: path.resolve(rootDir, '../../data/crystelfadmin'),
   constants: path.join(rootDir, 'constants'),
   lib: path.join(rootDir, 'lib'),
   models: path.join(rootDir, 'models'),
   index: path.join(rootDir, 'index.js'),
   pkg: path.join(rootDir, 'package.json'),
   yunzai: path.join(rootDir, '../../'),
-  data: path.join(rootDir, '../../data/crystelf/data'),
+  data: path.join(rootDir, '../../data/crystelfadmin/data'),
   rssHTML: path.join(rootDir, 'constants/rss/rss_template.html'),
-  rssCache: path.join(rootDir, '../../data/crystelf'),
+  rssCache: path.join(rootDir, '../../data/crystelfadmin'),
 };
 
 const configFile = fs.readFileSync(Path.defaultConfig, 'utf8');
