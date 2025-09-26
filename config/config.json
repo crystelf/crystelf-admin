@@ -7,5 +7,12 @@
     "wsSecret": "",
     "wsReConnectInterval": "5000",
     "token": ""
+  },
+  "napcat": {
+    "basePath": "",
+    "userPath": ""
+  },
+  "lgr": {
+    "basePath": ""
   }
 }
