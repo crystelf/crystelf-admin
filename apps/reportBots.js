@@ -26,13 +26,13 @@ export default class ReportBots extends plugin {
 
   async autoReport() {
     logger.mark(`[crystelf-admin] 正在自动同步bot数据到晶灵核心..`);
-    if (configControl.get('core')) {
+    if (configControl.get('config')?.core) {
       await botControl.reportBots();
     }
   }
 
   async manualReport(e) {
-    if (!configControl.get('core')) {
+    if (!configControl.get('config')?.core) {
       return e.reply(`[crystelf-admin] 晶灵核心未启用..`, true);
     }
     let success = await botControl.reportBots();
@@ -51,10 +51,10 @@ export default class ReportBots extends plugin {
     await e.reply(`开始广播消息到所有群..`);
     try {
       const sendData = {
-        token: configControl.get('coreConfig')?.token,
+        token: configControl.get('config')?.coreConfig?.token,
         message: msg.toString(),
       };
-      const url = configControl.get('coreConfig')?.coreUrl;
+      const url = configControl.get('config')?.coreConfig?.coreUrl;
       const returnData = await axios.post(`${url}/api/bot/broadcast`, sendData);
       if (returnData?.data?.success) {
         return await e.reply(`操作成功:${returnData?.data.data?.toString()}`);
