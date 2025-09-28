@@ -5,6 +5,8 @@ import config from '../../../lib/config/config.js';
 import configControl from '../lib/config/configControl.js';
 import axios from 'axios';
 import Meme from '../lib/core/meme.js';
+import NapcatService from '../lib/login/napcat.js';
+import LgrService from '../lib/login/lgr.js';
 
 const configPath = path.join(process.cwd(), 'data/crystelf/config');
 const loginSessions = new Map(); //正在进行的登录会话
@@ -53,15 +55,15 @@ export default class LoginService extends plugin {
       const binds = config?.login?.userBinds[userId] || [];
       if (binds.length === 0) {
         if (isAdmin) {
-          e.reply('请告诉我要登录的 QQ 号', true);
+          e.reply('你想登哪个qq?', true);
           loginSessions.set(userId, { step: 'askQq', admin: true });
         } else {
-          return e.reply('你没有绑定可登录的账号，请联系管理员分配..', true);
+          return e.reply('管理员似乎没有给你分配可用账户,请联系管理员添加..', true);
         }
       } else if (binds.length === 1) {
         targetQq = binds[0];
       } else {
-        e.reply(`你绑定了多个账号，请选择要登录的 QQ:\n${binds.join('\n')}`, true);
+        e.reply(`你小子账号还挺多,选一个qq登录吧:\n${binds.join('\n')}`, true);
         loginSessions.set(userId, { step: 'chooseQq', options: binds });
       }
     }
@@ -71,7 +73,7 @@ export default class LoginService extends plugin {
     } else {
       const binds = config?.login?.userBinds[userId] || [];
       if (!binds.includes(targetQq)) {
-        return e.reply('你没有权限登录该账号，请联系管理员分配', true);
+        return e.reply('你没有权限登录该账号,请联系管理员分配..', true);
       }
       await this.startUserLogin(e, targetQq);
     }
@@ -84,7 +86,7 @@ export default class LoginService extends plugin {
       qq,
       admin: true,
     });
-    e.reply(`请告诉我 QQ[${qq}] 的英文昵称`, true);
+    e.reply(`QQ[${qq}]的英文名叫什么?`, true);
   }
 
   /** 普通用户登录 */
@@ -124,6 +126,7 @@ export default class LoginService extends plugin {
     const qq = match[1];
     const at = e.at || e.user_id;
     if (!config?.userBinds[at]) {
+      ``;
       e.reply('该用户没有绑定账号', true);
       return;
     }
@@ -140,7 +143,7 @@ export default class LoginService extends plugin {
     if (session.step === 'askQq') {
       session.qq = e.msg.trim();
       session.step = 'askNickname';
-      e.reply(`请告诉我 QQ[${session.qq}] 的英文昵称`, true);
+      e.reply(`QQ[${session.qq}]的英文名叫什么?`, true);
       return;
     }
 
@@ -151,21 +154,21 @@ export default class LoginService extends plugin {
       }
       session.qq = e.msg.trim();
       session.step = 'askMethod';
-      e.reply(`请选择登录方式（回复 "nc" 或 "lgr"）来登录 QQ[${session.qq}]`, true);
+      e.reply(`请选择登录方式\n[nc]或[lgr]\n来登录 QQ[${session.qq}]`, true);
       return;
     }
 
     if (session.step === 'askNickname') {
       session.nickname = e.msg.trim();
       session.step = 'askMethod';
-      e.reply('请选择登录方式（回复 "nc" 或 "lgr"）', true);
+      e.reply(`请选择登录方式\n[nc]或[lgr]\n来登录 QQ[${session.qq}]`, true);
       return;
     }
 
     if (session.step === 'askMethod') {
       const method = e.msg.trim().toLowerCase();
       if (!['nc', 'lgr'].includes(method)) {
-        e.reply('登录方式无效，请回复 "nc" 或 "lgr"', true);
+        e.reply('登录方式无效', true);
         return;
       }
       session.method = method;
@@ -176,33 +179,35 @@ export default class LoginService extends plugin {
 
   /** 执行登录 */
   async doLogin(e, session) {
+    const redis = global.redis | undefined;
+    if (!redis) return e.reply('未找到全局redis服务..', true);
     const { qq, method, nickname } = session;
     e.reply(`开始使用 ${method} 登录 QQ[${qq}]`, true);
 
     let loginInstance;
     if (method === 'nc') {
-      loginInstance = NapcatService();
+      loginInstance = new NapcatService();
     } else {
-      loginInstance = LgrService();
+      loginInstance = new LgrService();
     }
 
-    const qrPath = await loginInstance.login();
+    const qrPath = await loginInstance.login(qq, nickname);
     e.reply(segment.image(qrPath), true);
     const timerKey = `login:timer:${qq}`;
-    redis.setex(timerKey, 120, 'pending');
+    redis.set(timerKey, 120, 'pending');
 
     const check = setInterval(async () => {
       const status = await loginInstance.checkStatus();
-      if (status === 'success') {
+      if (status) {
         clearInterval(check);
         redis.del(timerKey);
-        e.reply(`QQ[${qq}] 登录成功！`, true);
+        e.reply(`QQ[${qq}] 登录成功!`, true);
       }
       const ttl = await redis.ttl(timerKey);
       if (ttl <= 0) {
         clearInterval(check);
-        await loginInstance.disconnect();
-        e.reply(`QQ[${qq}] 登录超时，已断开`, true);
+        await loginInstance.disconnect(nickname);
+        e.reply(`QQ[${qq}] 登录超时,已断开,请重新发起登录..`, true);
       }
     }, 5000);
   }
