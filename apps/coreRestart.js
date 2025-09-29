@@ -13,11 +13,6 @@ export default class CoreRestart extends plugin {
           fnc: 'restart',
           permission: 'master',
         },
-        {
-          reg: '^test$',
-          fnc: 'test',
-          permission: 'master',
-        },
       ],
     });
   }
@@ -39,15 +34,5 @@ export default class CoreRestart extends plugin {
     } else {
       await e.reply(`核心重启花的时间有点久了呢..${restartTime?.data?.data}`, true);
     }
-  }
-
-  async test(e) {
-    logger.info(configControl.get());
-
-    await configControl.set('napcat', {
-      basePath: '114514',
-      userPath: '44444',
-    });
-    logger.info(configControl.get());
   }
 }
