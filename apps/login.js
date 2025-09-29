@@ -44,7 +44,7 @@ export default class LoginService extends plugin {
     let config = await configControl.get();
     if (!config?.login?.allowGroups.includes(e.group_id)) {
       const img = await Meme.getMeme('zhenxun', 'default');
-      return e.reply(segment.img(img)); //都不在群里玩什么;[
+      return e.reply(segment.image(img)); //都不在群里玩什么;[
     }
     const isAdmin = e.isMaster;
     const userId = e.user_id;
@@ -118,7 +118,7 @@ export default class LoginService extends plugin {
     let config = await configControl.get()?.login;
     if (!e.isMaster) {
       const img = await Meme.getMeme('zhenxun', 'default');
-      return e.reply(segment.img(img));
+      return e.reply(segment.image(img));
     }
     const match = e.msg.match(/^#绑定账号\s+(\d+)$/);
     if (!match) return;
@@ -142,7 +142,7 @@ export default class LoginService extends plugin {
   async unbindAccount(e) {
     if (!e.isMaster) {
       const img = await Meme.getMeme('zhenxun', 'default');
-      return e.reply(segment.img(img));
+      return e.reply(segment.image(img));
     }
     let config = await configControl.get()?.login;
     const match = e.msg.match(/^#解绑账号\s+(\d+)$/);
