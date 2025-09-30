@@ -225,24 +225,33 @@ export default class LoginService extends plugin {
       }
 
       const qrPath = await loginInstance.login(qq, nickname);
-      e.reply(segment.image(qrPath), true);
-      const timerKey = `login:timer:${qq}`;
-      await redis.set(timerKey, 120, 'pending');
+      if (qrPath) {
+        e.reply(segment.image(qrPath), true);
+        const timerKey = `login:timer:${qq}`;
+        await redis.set(timerKey, 120, 'pending');
 
-      const check = setInterval(async () => {
-        const status = await loginInstance.checkStatus();
+        const check = setInterval(async () => {
+          const status = await loginInstance.checkStatus(qq);
+          if (status) {
+            clearInterval(check);
+            await redis.del(timerKey);
+            return e.reply(`QQ[${qq}] 登录成功!`, true);
+          }
+          const ttl = await redis.ttl(timerKey);
+          if (ttl <= 0) {
+            clearInterval(check);
+            await loginInstance.disconnect(nickname);
+            return e.reply(`QQ[${qq}] 登录超时,已断开,请重新发起登录..`, true);
+          }
+        }, 5000);
+      } else {
+        const status = await loginInstance.checkStatus(qq);
         if (status) {
-          clearInterval(check);
-          await redis.del(timerKey);
-          return e.reply(`QQ[${qq}] 登录成功!`, true);
+          return e.reply(`QQ[${qq}] 使用上次登录缓存登录成功!`, true);
+        } else {
+          return e.reply(`QQ[${qq}] 登录出现未知错误,请联系管理员操作..`, true);
         }
-        const ttl = await redis.ttl(timerKey);
-        if (ttl <= 0) {
-          clearInterval(check);
-          await loginInstance.disconnect(nickname);
-          return e.reply(`QQ[${qq}] 登录超时,已断开,请重新发起登录..`, true);
-        }
-      }, 5000);
+      }
     } catch (err) {
       logger.error('[crystelf-admin]登录流程出现错误', err);
       return e.reply(`出了点小问题，过会儿再来试试吧..`);
