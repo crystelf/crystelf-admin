@@ -9,7 +9,7 @@
     "token": ""
   },
   "napcat": {
-    "basePath": "",
+    "basePath": "/opt/QQ/resources/app/app_launcher/napcat",
     "userPath": ""
   },
   "lgr": {
