@@ -225,10 +225,10 @@ export default class LoginService extends plugin {
       }
 
       const qrPath = await loginInstance.login(qq, nickname);
-      if (qrPath || qrPath !== 'none') {
-        e.reply(segment.image(`file:///${qrPath}`), true);
+      if (qrPath && qrPath !== 'none') {
+        await e.reply(segment.image(`file:///${qrPath}`), true);
         const timerKey = `login:timer:${qq}`;
-        await redis.set(timerKey, 120, 'pending');
+        await redis.set(timerKey, 'pending', 120);
 
         const check = setInterval(async () => {
           const status = await loginInstance.checkStatus(qq);
