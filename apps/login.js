@@ -225,7 +225,7 @@ export default class LoginService extends plugin {
       }
 
       const qrPath = await loginInstance.login(qq, nickname);
-      if (qrPath) {
+      if (qrPath || qrPath !== 'none') {
         e.reply(segment.image(qrPath), true);
         const timerKey = `login:timer:${qq}`;
         await redis.set(timerKey, 120, 'pending');
