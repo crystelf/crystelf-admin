@@ -212,38 +212,41 @@ export default class LoginService extends plugin {
    */
   async doLogin(e, session) {
     try {
-      const redis = global.redis;
-      //if (!redis) return e.reply('未找到全局redis服务..', true);
       const { qq, method, nickname } = session;
       e.reply(`开始使用 ${method} 登录 QQ[${qq}]`, true);
-
       let loginInstance;
       if (method === 'nc') {
         loginInstance = new NapcatService();
       } else {
         loginInstance = new LgrService();
       }
-
       const qrPath = await loginInstance.login(qq, nickname);
+      const loginTimers = new Map();
       if (qrPath && qrPath !== 'none') {
         await e.reply(segment.image(`file:///${qrPath}`), true);
         const timerKey = `login:timer:${qq}`;
-        await redis.set(timerKey, 'pending', 120);
-
+        if (loginTimers.has(timerKey)) {
+          clearTimeout(loginTimers.get(timerKey).timeout);
+          clearInterval(loginTimers.get(timerKey).check);
+          loginTimers.delete(timerKey);
+        }
         const check = setInterval(async () => {
           const status = await loginInstance.checkStatus(qq);
           if (status) {
             clearInterval(check);
-            await redis.del(timerKey);
+            clearTimeout(timerObj.timeout);
+            loginTimers.delete(timerKey);
             return e.reply(`QQ[${qq}] 登录成功!`, true);
           }
-          const ttl = await redis.ttl(timerKey);
-          if (ttl <= 0) {
-            clearInterval(check);
-            await loginInstance.disconnect(nickname);
-            return e.reply(`QQ[${qq}] 登录超时,已断开,请重新发起登录..`, true);
-          }
         }, 5000);
+        const timeout = setTimeout(async () => {
+          clearInterval(check);
+          loginTimers.delete(timerKey);
+          await loginInstance.disconnect(nickname);
+          return e.reply(`QQ[${qq}] 登录超时,已断开,请重新发起登录..`, true);
+        }, 120 * 1000);
+        const timerObj = { check, timeout };
+        loginTimers.set(timerKey, timerObj);
       } else {
         const status = await loginInstance.checkStatus(qq);
         if (status) {
