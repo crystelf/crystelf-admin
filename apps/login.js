@@ -1,12 +1,9 @@
 import plugin from '../../../lib/plugins/plugin.js';
-import path from 'path';
 import ConfigControl from '../lib/config/configControl.js';
 import configControl from '../lib/config/configControl.js';
 import Meme from '../lib/core/meme.js';
 import NapcatService from '../lib/login/napcat.js';
 import LgrService from '../lib/login/lgr.js';
-
-const configPath = path.join(process.cwd(), 'data/crystelf/config');
 const loginSessions = new Map(); //正在进行的登录会话
 const bindSessions = new Map(); //正在进行的绑定会话
 const activeLogins = new Map(); //在线登录实例
@@ -270,7 +267,7 @@ export default class LoginService extends plugin {
   async doLogin(e, session) {
     try {
       const { qq, method, nickname } = session;
-      e.reply(`开始使用 ${method} 登录 QQ[${qq}]`, true);
+      e.reply(`开始尝试使用 ${method} 登录 QQ[${qq}]`, true);
       let loginInstance;
       if (method === 'nc') {
         loginInstance = new NapcatService();
@@ -281,7 +278,14 @@ export default class LoginService extends plugin {
       const qrPath = await loginInstance.login(qq, nickname);
       const loginTimers = new Map();
       if (qrPath && qrPath !== 'none') {
-        await e.reply(segment.image(`file:///${qrPath}`), true);
+        await e.reply(
+          [
+            segment.image(`file:///${qrPath}`),
+            '\n请使用手机qq摄像头扫码登录并勾选保存登录状态\n二维码有效期2分钟..',
+          ],
+          true,
+          { recallMsg: 120 }
+        );
         const timerKey = `login:timer:${qq}`;
         if (loginTimers.has(timerKey)) {
           clearTimeout(loginTimers.get(timerKey).timeout);
