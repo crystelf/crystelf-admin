@@ -19,12 +19,12 @@ class WsClient {
         return;
       }
 
-      this.wsURL = configControl.get('coreConfig')?.wsUrl;
-      this.secret = configControl.get('coreConfig')?.wsSecret;
-      this.clientId = configControl.get('coreConfig')?.wsClientId;
-      this.reconnectInterval = configControl.get('coreConfig')?.wsReConnectInterval;
+      this.wsURL = configControl.get('config')?.coreConfig?.coreUrl;
+      this.secret = configControl.get('config')?.coreConfig?.wsSecret;
+      this.clientId = configControl.get('config')?.coreConfig?.wsClientId;
+      this.reconnectInterval = configControl.get('config')?.coreConfig?.wsReConnectInterval;
 
-      //logger.info(this.wsURL);
+      //logger.info(configControl.get('config'));
       this.ws = new WebSocket(this.wsURL);
 
       this.ws.on('open', () => {

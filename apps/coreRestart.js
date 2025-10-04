@@ -18,7 +18,7 @@ export default class CoreRestart extends plugin {
   }
 
   async restart(e) {
-    if (!configControl.get('core')) {
+    if (!configControl.get()?.core) {
       return e.reply(`晶灵核心未启用..`, true);
     }
     const returnData = await systemControl.systemRestart();
