@@ -58,20 +58,20 @@ export default class MemeUploadService extends plugin {
       uploadSessions.delete(key);
 
       try {
+        const token = await ConfigControl.get('config')?.coreConfig?.token;
+        const coreUrl = await ConfigControl.get('config')?.coreConfig?.coreUrl;
+        const res = await axios.get(session.img, { responseType: 'stream' });
         const formData = new FormData();
-        const res = await fetch(session.img);
-        const blob = await res.blob();
-        formData.append('file', blob, 'meme.jpg');
+        formData.append('file', res.data, 'meme.jpg');
         formData.append('character', session.character);
         formData.append('status', session.status);
 
-        const token = await ConfigControl.get('config')?.coreConfig?.token;
-        const coreUrl = await ConfigControl.get('config')?.coreConfig?.coreUrl;
         await axios.post(`${coreUrl}/api/meme/upload`, formData, {
           headers: {
             'x-token': token,
-            ...formData.getHeaders?.(),
+            ...formData.getHeaders(),
           },
+          maxBodyLength: Infinity,
         });
 
         return e.reply('上传成功~', true);
