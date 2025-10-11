@@ -2,8 +2,9 @@ import plugin from '../../../lib/plugins/plugin.js';
 import axios from 'axios';
 import YunzaiUtils from '../lib/yunzai/utils.js';
 import ConfigControl from '../lib/config/configControl.js';
+import FormData from 'form-data';
 
-const uploadSessions = new Map(); // 正在进行的上传会话
+const uploadSessions = new Map();
 
 export default class MemeUploadService extends plugin {
   constructor() {
@@ -21,10 +22,6 @@ export default class MemeUploadService extends plugin {
     });
   }
 
-  /**
-   * 上传入口
-   * @param e
-   */
   async startUpload(e) {
     if (!e.isMaster) return e.reply('不许你上传哦', true);
     const key = e.user_id;
@@ -60,9 +57,22 @@ export default class MemeUploadService extends plugin {
       try {
         const token = await ConfigControl.get('config')?.coreConfig?.token;
         const coreUrl = await ConfigControl.get('config')?.coreConfig?.coreUrl;
-        const res = await axios.get(session.img, { responseType: 'stream' });
+        const response = await axios.get(session.img, {
+          responseType: 'arraybuffer',
+        });
+
         const formData = new FormData();
-        formData.append('file', res.data, { filename: 'meme.jpg' });
+        const buffer = Buffer.from(response.data);
+
+        const isGif = buffer.slice(0, 3).toString() === 'GIF';
+        const filename = isGif ? 'meme.gif' : 'meme.jpg';
+        const contentType = isGif ? 'image/gif' : 'image/jpeg';
+
+        formData.append('file', buffer, {
+          filename: filename,
+          contentType: contentType,
+        });
+
         formData.append('character', session.character);
         formData.append('status', session.status);
 
@@ -76,7 +86,6 @@ export default class MemeUploadService extends plugin {
 
         return e.reply('上传成功~', true);
       } catch (err) {
-        console.error(err);
         return e.reply('上传失败..', true);
       }
     }
