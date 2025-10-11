@@ -62,7 +62,7 @@ export default class MemeUploadService extends plugin {
         const coreUrl = await ConfigControl.get('config')?.coreConfig?.coreUrl;
         const res = await axios.get(session.img, { responseType: 'stream' });
         const formData = new FormData();
-        formData.append('file', res.data, 'meme.jpg');
+        formData.append('file', res.data, { filename: 'meme.jpg' });
         formData.append('character', session.character);
         formData.append('status', session.status);
 
