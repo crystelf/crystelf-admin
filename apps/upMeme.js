@@ -22,6 +22,10 @@ export default class MemeUploadService extends plugin {
     });
   }
 
+  /**
+   * 上传入口
+   * @param e
+   */
   async startUpload(e) {
     if (!e.isMaster) return e.reply('不许你上传哦', true);
     const key = e.user_id;
@@ -60,17 +64,10 @@ export default class MemeUploadService extends plugin {
         const response = await axios.get(session.img, {
           responseType: 'arraybuffer',
         });
-
         const formData = new FormData();
-        const buffer = Buffer.from(response.data);
-
-        const isGif = buffer.slice(0, 3).toString() === 'GIF';
-        const filename = isGif ? 'meme.gif' : 'meme.jpg';
-        const contentType = isGif ? 'image/gif' : 'image/jpeg';
-
-        formData.append('file', buffer, {
-          filename: filename,
-          contentType: contentType,
+        formData.append('file', Buffer.from(response.data), {
+          filename: 'meme.jpg',
+          contentType: 'image/jpeg',
         });
 
         formData.append('character', session.character);
@@ -86,6 +83,7 @@ export default class MemeUploadService extends plugin {
 
         return e.reply('上传成功~', true);
       } catch (err) {
+        logger.error(err);
         return e.reply('上传失败..', true);
       }
     }
