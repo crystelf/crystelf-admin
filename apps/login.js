@@ -1,25 +1,9 @@
 import plugin from '../../../lib/plugins/plugin.js';
 import ConfigControl from '../lib/config/configControl.js';
 import configControl from '../lib/config/configControl.js';
-imporexport default class UpMeme extends plugin {
-  constructor() {
-    super({
-      name: '上传表情包',
-      dsc: 'yeye',
-      event: 'message',
-      priority: '-114',
-      rule: [
-        {
-          reg: '^#上传(\\d+)?$',
-          fnc: 'up',
-        },
-      ],
-    });
-  }
-}
-t Meme from '../lib/core/meme.js';
 import NapcatService from '../lib/login/napcat.js';
 import LgrService from '../lib/login/lgr.js';
+import Meme from "../lib/core/meme.js";
 const loginSessions = new Map(); //正在进行的登录会话
 const bindSessions = new Map(); //正在进行的绑定会话
 const activeLogins = new Map(); //在线登录实例
